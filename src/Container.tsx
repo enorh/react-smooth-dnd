@@ -9,6 +9,7 @@ container.wrapChild = false;
 interface ContainerProps extends ContainerOptions {
 	render?: (rootRef: React.RefObject<any>) => React.ReactElement;
 	style?: CSSProperties;
+  innerRef?: React.ForwardedRef<any>;
 }
 
 class Container extends Component<ContainerProps> {
@@ -17,6 +18,7 @@ class Container extends Component<ContainerProps> {
 		groupName: PropTypes.string,
 		orientation: PropTypes.oneOf(['horizontal', 'vertical']),
 		style: PropTypes.object,
+    innerRef: PropTypes.object,
 		dragHandleSelector: PropTypes.string,
 		nonDragAreaSelector: PropTypes.string,
 		dragBeginDelay: PropTypes.number,
@@ -53,13 +55,15 @@ class Container extends Component<ContainerProps> {
 
 	prevContainer: null;
 	container: SmoothDnD = null!;
-	containerRef: React.RefObject<any> = React.createRef();
+	containerRef: any = React.createRef();
   constructor(props: ContainerProps) {
     super(props);
 		this.getContainerOptions = this.getContainerOptions.bind(this);
     this.getContainer = this.getContainer.bind(this);
     this.isObjectTypePropsChanged = this.isObjectTypePropsChanged.bind(this);
     this.prevContainer = null;
+    if(this.props.innerRef)
+      this.containerRef = this.props.innerRef;
   }
 
   componentDidMount() {
@@ -88,7 +92,7 @@ class Container extends Component<ContainerProps> {
   }
 
   isObjectTypePropsChanged(prevProps: ContainerProps) {
-    const { render, children, style, ...containerOptions } = this.props;
+    const { render, children, style, innerRef, ...containerOptions } = this.props;
 
     for (const _key in containerOptions) {
       const key = _key as keyof ContainerOptions;
@@ -115,7 +119,7 @@ class Container extends Component<ContainerProps> {
       );
     }
 	}
-	
+
   getContainer() {
 		return this.containerRef.current;
 	}
@@ -138,4 +142,6 @@ class Container extends Component<ContainerProps> {
   }
 }
 
-export default Container;
+export default React.forwardRef((props, ref) =>
+  <Container innerRef={ref} {...props}/>
+);
